@@ -16,23 +16,30 @@ raw_data = all_sheets['Raw Grade Data']
 
 def get_worst_subjects_data(subject: str) -> dict:
     """
-        Fetch the top 10 worst performing courses within a given subject
-        The courses are ranked with their highest rates of "D or less" performance
+        Fetch the top 10 worst performing courses within a given subject.
+        The courses are ranked by the highest number of students who received "D or less".
     """
     subject_data = raw_data[raw_data['Course Subject'] == subject]
 
-    subject_data['Fail Rate'] = (subject_data['# D'] + subject_data['# F'])/subject_data['Total #']
-    top10 = subject_data.sort_values('Fail Rate', ascending=False).head(10)
+    subject_data['Total Failed'] = subject_data['# D'] + subject_data['# F']
+    top10 = subject_data.sort_values('Total Failed', ascending=False).head(10)
     
-    failrate_dict = {}
-    failrate_dict['Others'] = 1
+    failed_dict = {}
+    top10_courses = set()
+    failed_dict['Others'] = 0
     for _, row in top10.iterrows():
         course = row['Course Subject'] + row['Catalog Number']
-        failrate = row['Fail Rate']
-        failrate_dict[course] = failrate
-        failrate_dict['Others'] -= failrate
+        total_failed = int(row['Total Failed'])  # convert to Python int
+        failed_dict[course] = total_failed
+        top10_courses.add(course)
+
+    # Sum 'Others'
+    for _, row in subject_data.iterrows():
+        course = row['Course Subject'] + row['Catalog Number']
+        if course not in top10_courses:
+            failed_dict['Others'] += int(row['Total Failed'])  
     
-    return failrate_dict
+    return failed_dict
 
 
 def get_faculty_data(faculty: str):

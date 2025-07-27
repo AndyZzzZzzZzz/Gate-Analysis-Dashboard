@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import { VueUiDonut } from "vue-data-ui";
-import "vue-data-ui/style.css"; // If you are using multiple components, place this style import in your main
 
 const config = ref({
         type: 'classic',
@@ -79,13 +78,13 @@ const config = ref({
             show: false,
             responsiveBreakpoint: 400,
             th: {
-                backgroundColor: '#FFFFFFff',
-                color: '#1A1A1Aff',
+                backgroundColor: '#000000ff',
+                color: '#ffffffff',
                 outline: 'none'
             },
             td: {
-                backgroundColor: '#FFFFFFff',
-                color: '#1A1A1Aff',
+                backgroundColor: '#000000ff',
+                color: '#ffffffff',
                 outline: 'none',
                 roundingValue: 0,
                 roundingPercentage: 0
@@ -101,8 +100,8 @@ const config = ref({
             chart: {
                 useGradient: true,
                 gradientIntensity: 40,
-                backgroundColor: '#FFFFFFff',
-                color: '#1A1A1Aff',
+                backgroundColor: '#000001ff',
+                color: '#ffffffff',
                 padding: {
                     top: 0,
                     right: 0,
@@ -127,7 +126,7 @@ const config = ref({
                             formatter: null
                         },
                         percentage: {
-                            color: '#1A1A1Aff',
+                            color: '#ffffffff',
                             bold: true,
                             fontSize: 18,
                             rounding: 0,
@@ -144,7 +143,7 @@ const config = ref({
                                 show: true,
                                 bold: false,
                                 fontSize: 18,
-                                color: '#AAAAAAff',
+                                color: '#ffffffff',
                                 text: 'Total',
                                 offsetY: 0,
                                 value: {
@@ -183,7 +182,7 @@ const config = ref({
                         borderWidth: 1,
                         useShadow: false,
                         shadowColor: '#1A1A1A',
-                        emptyFill: '#E1E5E8'
+                        emptyFill: 'rgba(255, 255, 255, 1)'
                     }
                 },
                 comments: {
@@ -196,8 +195,8 @@ const config = ref({
                 legend: {
                     show: true,
                     bold: false,
-                    backgroundColor: '#FFFFFFff',
-                    color: '#1A1A1Aff',
+                    backgroundColor: '#000000ff',
+                    color: '#ffffffff',
                     fontSize: 16,
                     roundingValue: 0,
                     roundingPercentage: 0,
@@ -206,8 +205,8 @@ const config = ref({
                 },
                 tooltip: {
                     show: true,
-                    color: '#1A1A1Aff',
-                    backgroundColor: '#FFFFFFff',
+                    color: '#ffffffff',
+                    backgroundColor: '#000000ff',
                     fontSize: 14,
                     customFormat: null,
                     borderRadius: 4,
@@ -222,8 +221,8 @@ const config = ref({
                     roundingPercentage: 0
                 },
                 title: {
-                    text: 'Title',
-                    color: '#1A1A1Aff',
+                    text: 'Performance by Subjects',
+                    color: '#ffffffff',
                     fontSize: 20,
                     bold: true,
                     textAlign: 'center',
@@ -261,6 +260,26 @@ const dataset = ref([
             25
         ],
         color: '#ff7f0e'
+    },
+    {
+        name: 'name',
+        values: [],
+        color: '#42d392'
+    },
+    {
+        name: 'name',
+        values: [],
+        color: '#42d392'
+    },
+    {
+        name: 'name',
+        values: [],
+        color: '#42d392'
+    },
+    {
+        name: 'name',
+        values: [],
+        color: '#42d392'
     }
 ]);
 
