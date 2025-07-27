@@ -1,10 +1,10 @@
 import { createApp } from 'vue'
-import App from './App.vue';
-import "vue-data-ui/style.css";
-import { VueUiRader } from "vue-data-ui";
+import App from './App.vue'
+import "vue-data-ui/style.css"  // Vue Data UI styles
+import { VueUiRadar } from "vue-data-ui"
 
+const app = createApp(App)
 
-const app = createApp(App);
-app.component("VueUiRader", VueUiRader);
+app.component("VueUiRadar", VueUiRadar)
 
-app.mount('#app');
+app.mount('#app')
