@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 # Cross-Origin Resource Sharing policies, allow frontend on different domain/porttalk to this api
 from fastapi.middleware.cors import CORSMiddleware
-
+from api import data
 
 app = FastAPI()
 
@@ -14,9 +14,7 @@ app.add_middleware(
     allow_headers=["*"]         # Allow any headers in the request 
 )
 
-# Define HTTP Get endpoint
-@app.get("/api/data")
-async def get_data():
-    return {"labels": ["A", "B", "c"], "values": [10, 20, 30]}
+# API routers
+app.include_router(data.router, prefix="/api")
 
 # uvicorn main:app --reload --port 8000
