@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { VueUiDonut } from "vue-data-ui";
+import { fetchSubjectData } from "../api"
 
 const config = ref({
         type: 'classic',
@@ -100,7 +101,7 @@ const config = ref({
             chart: {
                 useGradient: true,
                 gradientIntensity: 40,
-                backgroundColor: '#000001ff',
+                backgroundColor: '#121212',
                 color: '#ffffffff',
                 padding: {
                     top: 0,
@@ -133,7 +134,7 @@ const config = ref({
                             formatter: null
                         },
                         name: {
-                            color: '#1A1A1Aff',
+                            color: '#f0c9c9ff',
                             bold: false,
                             fontSize: 14
                         },
@@ -147,7 +148,7 @@ const config = ref({
                                 text: 'Total',
                                 offsetY: 0,
                                 value: {
-                                    color: '#1A1A1Aff',
+                                    color: '#f0c9c9ff',
                                     fontSize: 18,
                                     bold: true,
                                     suffix: '',
@@ -161,11 +162,11 @@ const config = ref({
                                 show: true,
                                 bold: false,
                                 fontSize: 18,
-                                color: '#AAAAAAff',
+                                color: '#fdfcfcff',
                                 text: 'Average',
                                 offsetY: 0,
                                 value: {
-                                    color: '#1A1A1Aff',
+                                    color: '#f0c9c9ff',
                                     fontSize: 18,
                                     bold: true,
                                     suffix: '',
@@ -195,7 +196,7 @@ const config = ref({
                 legend: {
                     show: true,
                     bold: false,
-                    backgroundColor: '#000000ff',
+                    backgroundColor: '#121212',
                     color: '#ffffffff',
                     fontSize: 16,
                     roundingValue: 0,
@@ -229,7 +230,7 @@ const config = ref({
                     paddingLeft: 0,
                     paddingRight: 0,
                     subtitle: {
-                        color: '#A1A1A1ff',
+                        color: 'rgba(220, 201, 201, 1)',
                         text: '',
                         fontSize: 16,
                         bold: false
@@ -239,55 +240,33 @@ const config = ref({
         }
     });
 
-const dataset = ref([
-    {
-        name: 'series 1',
-        values: [
-            100
-        ],
-        color: '#1f77b4'
-    },
-    {
-        name: 'series 2',
-        values: [
-            50
-        ],
-        color: '#aec7e8'
-    },
-    {
-        name: 'series 3',
-        values: [
-            25
-        ],
-        color: '#ff7f0e'
-    },
-    {
-        name: 'name',
-        values: [],
-        color: '#42d392'
-    },
-    {
-        name: 'name',
-        values: [],
-        color: '#42d392'
-    },
-    {
-        name: 'name',
-        values: [],
-        color: '#42d392'
-    },
-    {
-        name: 'name',
-        values: [],
-        color: '#42d392'
-    }
-]);
+const dataset = ref([]);
+
+onMounted(async () => {
+  try {
+    const raw = await fetchSubjectData();
+    const palette = [
+        "#1f77b4", "#aec7e8", "#ff7f0e", "#2ca02c", "#d62728",
+        "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"
+    ];
+    let mainData = Object.entries(raw).map(([name, value], i) => ({
+      name: name,
+      values: [value],
+      color: palette[i % palette.length]
+    }));
+    console.log(mainData); // <---- Add this line!
+    dataset.value = mainData;
+  } catch (err) {
+    console.error(err);
+  }
+});
 
 </script>
 <template>
     <!-- Using a wrapper is optional -->
     <div :style="{ width: '600px'}">
         <VueUiDonut
+        v-if="dataset.length > 0"
             :config="config"
             :dataset="dataset"
         />
