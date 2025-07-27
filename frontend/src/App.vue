@@ -1,26 +1,53 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app" class="dark-mode">
+    <HeaderSection />
+    <main class="main-content">
+      <h1>Welcome to My Dashboard</h1>
+
+      <!-- Charts / Components -->
+
+
+      <VueUiRader />
+    </main>
+    <FooterSection />
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import HeaderSection from './components/HeaderSection.vue'
+import FooterSection from './components/FooterSection.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    HeaderSection,
+    FooterSection
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.dark-mode {
+  background-color: #121212;
+  color: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1; 
+  padding: 20px;
+}
+
+h1 {
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+}
+
+/* Removes white spaces around the web browser */
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 </style>
