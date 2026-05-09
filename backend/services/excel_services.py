@@ -88,11 +88,11 @@ def _prepare_raw_grade_data() -> pd.DataFrame:
         else:
             data[col] = 0
 
-    data["course_code"] = data["Course Subject"] + " " + data["Catalog Number"]
-    data["course_level"] = data["Catalog Number"].map(_extract_course_level)
-    data["total_students"] = data["Total # (incl # W)"]
-    data["dfw_count"] = data["# D"] + data["# F"] + data["# W"]
-    data["withdraw_count"] = data["# W"]
+    data["course_code"] = data["Course Subject"] + " " + data["Catalog Number"]                 # derived course code
+    data["course_level"] = data["Catalog Number"].map(_extract_course_level)                    # derived course level
+    data["total_students"] = data["Total # (incl # W)"]                                         # derived total students
+    data["dfw_count"] = data["# D"] + data["# F"] + data["# W"]                                 # number of students with D/F/W
+    data["withdraw_count"] = data["# W"]                                                        # number of students with W
     data["dfw_rate"] = _safe_ratio(data["dfw_count"], data["total_students"])
     data["withdraw_rate"] = _safe_ratio(data["withdraw_count"], data["total_students"])
 

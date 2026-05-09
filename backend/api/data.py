@@ -1,6 +1,10 @@
-from fastapi import APIRouter
-from fastapi import Query
-from services.excel_services import *
+from fastapi import APIRouter, Query
+from services.excel_services import (
+    get_course_data,
+    get_faculty_data,
+    get_population_data,
+    get_worst_subjects_data,
+)
 
 router = APIRouter()
 
@@ -8,8 +12,19 @@ router = APIRouter()
 
 @router.get("/data/get_worst_subjects_data")
 async def get_worst_subjects(subject: str = Query(..., example="STAT")):
-    data = get_worst_subjects_data(subject)
-    return data
+    return get_worst_subjects_data(subject)
 
 
+@router.get("/data/get_faculty_data")
+async def faculty_data(faculty: str = Query(..., example="SCI")):
+    return get_faculty_data(faculty)
 
+
+@router.get("/data/get_course_data")
+async def course_data(course: str = Query(..., example="ACMA 101")):
+    return get_course_data(course)
+
+
+@router.get("/data/get_population_data")
+async def population_data():
+    return get_population_data()
