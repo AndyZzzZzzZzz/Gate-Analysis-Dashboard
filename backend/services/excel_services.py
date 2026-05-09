@@ -52,7 +52,7 @@ def _resolve_excel_path() -> str:
         return os.path.abspath(env_path)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.abspath(os.path.join(base_dir, "..", "data", EXCEL_FILE_NAME)),
+    path = os.path.abspath(os.path.join(base_dir, "..", "data", EXCEL_FILE_NAME))
     return path
 
 
@@ -106,6 +106,25 @@ def _prepare_raw_grade_data() -> pd.DataFrame:
 
 
 raw_data = _prepare_raw_grade_data()
+
+
+def get_subjects(faculty: str | None = None) -> Dict[str, object]:
+    """
+    Return a sorted list of available subjects.
+    Optional faculty filter (e.g., SCI) narrows the list.
+    """
+    data = raw_data
+    faculty_key = None
+    if faculty is not None and str(faculty).strip():
+        faculty_key = str(faculty).strip().upper()
+        data = data[data["Course Faculty"] == faculty_key]
+
+    subjects = sorted(data["Course Subject"].dropna().astype(str).str.strip().unique().tolist())
+    return {
+        "count": len(subjects),
+        "faculty": faculty_key,
+        "subjects": subjects,
+    }
 
 
 def get_worst_subjects_data(subject: str) -> Dict[str, int]:

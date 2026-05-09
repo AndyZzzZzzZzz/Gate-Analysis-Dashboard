@@ -3,6 +3,7 @@ from services.excel_services import (
     get_course_data,
     get_faculty_data,
     get_population_data,
+    get_subjects,
     get_worst_subjects_data,
 )
 
@@ -28,3 +29,8 @@ async def course_data(course: str = Query(..., example="ACMA 101")):
 @router.get("/data/get_population_data")
 async def population_data():
     return get_population_data()
+
+
+@router.get("/data/get_subjects")
+async def subjects_data(faculty: str | None = Query(default=None, example="SCI")):
+    return get_subjects(faculty)
