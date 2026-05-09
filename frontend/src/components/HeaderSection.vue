@@ -8,7 +8,7 @@
 .header {
   background: #1f1f1f;
   text-align: center;
-  font-size: 1.5remrem;         /* Make the text bigger if you want */
+  font-size: 1.5rem;
   color: #fafafa;            /* Make the text bright */
   padding: 18px 0 12px 0;    /* top right bottom left */
   font-weight: bold;

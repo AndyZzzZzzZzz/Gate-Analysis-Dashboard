@@ -1,4 +1,5 @@
 import os
+import typing
 from typing import Dict
 
 import pandas as pd
@@ -108,7 +109,7 @@ def _prepare_raw_grade_data() -> pd.DataFrame:
 raw_data = _prepare_raw_grade_data()
 
 
-def get_subjects(faculty: str | None = None) -> Dict[str, object]:
+def get_subjects(faculty: typing.Optional[str] = None) -> Dict[str, object]:
     """
     Return a sorted list of available subjects.
     Optional faculty filter (e.g., SCI) narrows the list.
@@ -124,6 +125,33 @@ def get_subjects(faculty: str | None = None) -> Dict[str, object]:
         "count": len(subjects),
         "faculty": faculty_key,
         "subjects": subjects,
+    }
+
+
+def get_faculties() -> Dict[str, object]:
+    faculties = sorted(raw_data["Course Faculty"].dropna().astype(str).str.strip().str.upper().unique().tolist())
+    return {
+        "count": len(faculties),
+        "faculties": faculties,
+    }
+
+
+def get_courses(subject: typing.Optional[str] = None) -> Dict[str, object]:
+    """
+    Return a sorted list of course codes.
+    Optional subject filter (e.g., STAT) narrows the list.
+    """
+    data = raw_data
+    subject_key = None
+    if subject is not None and str(subject).strip():
+        subject_key = str(subject).strip().upper()
+        data = data[data["Course Subject"] == subject_key]
+
+    courses = sorted(data["course_code"].dropna().astype(str).str.strip().unique().tolist())
+    return {
+        "count": len(courses),
+        "subject": subject_key,
+        "courses": courses,
     }
 
 
@@ -238,11 +266,18 @@ def get_population_data() -> Dict[str, object]:
 
     top_dfw_courses = (
         raw_data.groupby("course_code", as_index=False)
-        .agg(dfw_count=("dfw_count", "sum"), total_students=("total_students", "sum"))
+        .agg(
+            dfw_count=("dfw_count", "sum"),
+            withdraw_count=("withdraw_count", "sum"),
+            total_students=("total_students", "sum"),
+        )
         .sort_values("dfw_count", ascending=False)
         .head(10)
     )
     top_dfw_courses["dfw_rate"] = _safe_ratio(top_dfw_courses["dfw_count"], top_dfw_courses["total_students"])
+    top_dfw_courses["withdraw_rate"] = _safe_ratio(
+        top_dfw_courses["withdraw_count"], top_dfw_courses["total_students"]
+    )
 
     by_course_level = (
         raw_data.groupby("course_level", as_index=False)
@@ -271,4 +306,130 @@ def get_population_data() -> Dict[str, object]:
         "top_dfw_courses": top_dfw_courses.to_dict(orient="records"),
         "course_level_difficulty": by_course_level.to_dict(orient="records"),
         "w_vs_non_w_summary": by_w_status.to_dict(orient="records"),
+    }
+
+
+def get_top_dfw_courses(
+    subject: typing.Optional[str] = None,
+    faculty: typing.Optional[str] = None,
+    limit: int = 10,
+    level: typing.Optional[str] = None,
+    metric: str = "ALL",
+    min_students: typing.Optional[int] = None,
+) -> Dict[str, object]:
+    """
+    Return top DFW-rate courses, optionally filtered by subject.
+    """
+    data = raw_data
+    subject_key = None
+    if subject is not None and str(subject).strip():
+        subject_key = str(subject).strip().upper()
+        data = data[data["Course Subject"] == subject_key]
+
+    faculty_key = None
+    if faculty is not None and str(faculty).strip():
+        faculty_key = str(faculty).strip().upper()
+        data = data[data["Course Faculty"] == faculty_key]
+
+    level_key = None
+    if level is not None and str(level).strip():
+        level_key = str(level).strip()
+        if level_key.isdigit():
+            data = data[data["Catalog Number"].astype(str).str.startswith(level_key[0])]
+
+    metric_key = str(metric).strip().upper() if metric else "ALL"
+    if metric_key not in {"ALL", "FAILURE", "CLOWN"}:
+        metric_key = "ALL"
+
+    grouped = (
+        data.groupby(["course_code", "Course Subject"], as_index=False)
+        .agg(
+            d_count=("# D", "sum"),
+            f_count=("# F", "sum"),
+            fd_count=("# FD", "sum"),
+            n_count=("# N", "sum"),
+            dfw_count=("dfw_count", "sum"),
+            withdraw_count=("withdraw_count", "sum"),
+            total_students=("total_students", "sum"),
+        )
+    )
+    if grouped.empty:
+        return {
+            "subject": subject_key,
+            "faculty": faculty_key,
+            "level": level_key,
+            "metric": metric_key,
+            "min_students": None,
+            "courses": [],
+        }
+
+    min_students_value = None
+    if min_students is not None:
+        min_students_value = max(0, int(min_students))
+        grouped = grouped[grouped["total_students"] >= min_students_value]
+        if grouped.empty:
+            return {
+                "subject": subject_key,
+                "faculty": faculty_key,
+                "level": level_key,
+                "metric": metric_key,
+                "min_students": min_students_value,
+                "courses": [],
+            }
+
+    grouped["failure_count"] = grouped["d_count"] + grouped["f_count"]
+    grouped["clown_count"] = grouped["fd_count"] + grouped["n_count"]
+    grouped["all_count"] = grouped["failure_count"] + grouped["clown_count"]
+    grouped["failure_rate"] = _safe_ratio(grouped["failure_count"], grouped["total_students"])
+    grouped["clown_rate"] = _safe_ratio(grouped["clown_count"], grouped["total_students"])
+    grouped["all_rate"] = _safe_ratio(grouped["all_count"], grouped["total_students"])
+    grouped["dfw_rate"] = _safe_ratio(grouped["dfw_count"], grouped["total_students"])
+    grouped["withdraw_rate"] = _safe_ratio(grouped["withdraw_count"], grouped["total_students"])
+
+    sort_rate_col = {
+        "ALL": "all_rate",
+        "FAILURE": "failure_rate",
+        "CLOWN": "clown_rate",
+    }[metric_key]
+    sort_count_col = {
+        "ALL": "all_count",
+        "FAILURE": "failure_count",
+        "CLOWN": "clown_count",
+    }[metric_key]
+
+    grouped["selected_rate"] = grouped[sort_rate_col]
+    grouped["selected_count"] = grouped[sort_count_col]
+    grouped = grouped.sort_values(["selected_rate", "selected_count"], ascending=[False, False]).head(max(1, int(limit)))
+
+    return {
+        "subject": subject_key,
+        "faculty": faculty_key,
+        "level": level_key,
+        "metric": metric_key,
+        "min_students": min_students_value,
+        "courses": grouped.to_dict(orient="records"),
+    }
+
+
+def get_faculty_grade_heatmap() -> Dict[str, object]:
+    """
+    Return faculty x grade percentage matrix for heatmap rendering.
+    """
+    grade_columns = list(GPA_GRADE_COLUMNS.keys())
+
+    grouped = raw_data.groupby("Course Faculty")[grade_columns].sum()
+    row_totals = grouped.sum(axis=1).replace(0, pd.NA)
+    percentages = grouped.div(row_totals, axis=0).fillna(0.0)
+
+    faculties = percentages.index.tolist()
+    grades = percentages.columns.tolist()
+
+    matrix = []
+    for faculty in faculties:
+        matrix.append([float(percentages.loc[faculty, grade]) for grade in grades])
+
+    return {
+        "faculties": faculties,
+        "grades": grades,
+        "matrix": matrix,
     }
